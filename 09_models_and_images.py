@@ -8,11 +8,15 @@ import pygame
 from objloader import Obj
 from PIL import Image
 
+# Configuración de OpenGL en pygame
 os.environ['SDL_WINDOWS_DPI_AWARENESS'] = 'permonitorv2'
-
 pygame.init()
-pygame.display.set_mode((800, 800), flags=pygame.OPENGL | pygame.DOUBLEBUF, vsync=True)
 
+pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
+pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
+pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_CORE)
+
+pygame.display.set_mode((800, 800), flags=pygame.OPENGL | pygame.DOUBLEBUF, vsync=True)
 
 class ImageTexture:
     def __init__(self, path):
@@ -25,7 +29,6 @@ class ImageTexture:
     def use(self):
         self.sampler.use()
 
-
 class ModelGeometry:
     def __init__(self, path):
         self.ctx = moderngl.get_context()
@@ -35,7 +38,6 @@ class ModelGeometry:
 
     def vertex_array(self, program):
         return self.ctx.vertex_array(program, [(self.vbo, '3f 12x 2f', 'in_vertex', 'in_uv')])
-
 
 class Mesh:
     def __init__(self, program, geometry, texture=None):
@@ -54,7 +56,6 @@ class Mesh:
         self.vao.program['color'] = color
         self.vao.program['scale'] = scale
         self.vao.render()
-
 
 class Scene:
     def __init__(self):
@@ -79,8 +80,7 @@ class Scene:
                 void main() {
                     v_vertex = position + in_vertex * scale;
                     v_normal = in_normal;
-                    v_uv = in_uv;
-
+                    v_uv = in_uv * 3.0;  // Ampliar la imagen para "zoom" en cada cara del cubo
                     gl_Position = camera * vec4(v_vertex, 1.0);
                 }
             ''',
@@ -98,16 +98,21 @@ class Scene:
                 layout (location = 0) out vec4 out_color;
 
                 void main() {
-                    out_color = vec4(color, 1.0);
+                    vec4 base_color = vec4(color, 1.0);  // Color base para el cubo
                     if (use_texture) {
-                        out_color *= texture(Texture, v_uv);
+                        vec4 texture_color = texture(Texture, v_uv);
+                        out_color = mix(base_color, texture_color, texture_color.a);  // Superponer la textura
+                    } else {
+                        out_color = base_color;
                     }
                 }
             ''',
         )
 
+        # Cargar la textura e inicializar el cubo con su textura
         self.texture = ImageTexture('examples/data/textures/crate.png')
 
+        # Cargar la geometría del carro y del cubo
         self.car_geometry = ModelGeometry('examples/data/models/lowpoly_toy_car.obj')
         self.car = Mesh(self.program, self.car_geometry)
 
@@ -129,10 +134,14 @@ class Scene:
 
         self.program['camera'].write(camera)
 
+        # Renderizar el auto
         self.car.render((-0.4, 0.0, 0.0), (1.0, 0.0, 0.0), 0.2)
-        self.crate.render((0.0, 0.0, 0.0), (1.0, 1.0, 1.0), 0.2)
-        self.car.render((0.4, 0.0, 0.0), (0.0, 0.0, 1.0), 0.2)
 
+        # Renderizar el cubo con textura sobre el color base gris
+        self.crate.render((0.0, 0.0, 0.0), (0.5, 0.5, 0.5), 0.2)
+
+        # Renderizar otro auto para dar balance a la escena
+        self.car.render((0.4, 0.0, 0.0), (0.0, 0.0, 1.0), 0.2)
 
 scene = Scene()
 
@@ -143,5 +152,4 @@ while True:
             sys.exit()
 
     scene.render()
-
     pygame.display.flip()

@@ -18,19 +18,50 @@ This lab stands to prepare the moderngl development environment. Below the steps
     - https://github.com/moderngl/moderngl
     - https://moderngl.readthedocs.io/
 
-## How to run your program
+## **How to Run Your Program**
 
-```
-# Update this section with instructions on how to run your programs. 
+To run this project on a fresh Ubuntu 22.04 installation, follow these steps to set up the required environment and dependencies.
 
-# Consider that these instructions will be executed 
-in a completely new linux-based machine (Ubuntu 22.04),
-so, instructions for dependencies installation must be added.
+1. **Install Python 3.8+ and pip**:
+   Ubuntu 22.04 typically includes Python 3.10 by default. Ensure `pip` is installed:
+   ```bash
+   sudo apt update
+   sudo apt install -y python3 python3-pip python3-venv
+   ```
 
-# It's highly recommended to use python virtual envs. 
-You may take a look on:
-https://docs.python.org/3/library/venv.html
-```
+2. **Set up a Virtual Environment**:
+   Using a virtual environment keeps dependencies isolated and prevents conflicts.
+   ```bash
+   python3 -m venv cg-booting-env
+   source cg-booting-env/bin/activate
+   ```
+
+3. **Install Project Dependencies**:
+   With the virtual environment activated, install required libraries:
+   ```bash
+   pip install moderngl pygame pillow PyGLM numpy
+   ```
+
+4. **Clone the Repository**:
+   Retrieve the project code from the repository:
+   ```bash
+   git clone https://github.com/user/cg-booting-up-ivmg57.git
+   cd cg-booting-up-ivmg57
+   ```
+
+5. **Run Example Scripts**:
+   After setup, you can execute any of the example scripts. For instance:
+   ```bash
+   python 01_hello_world.py
+   ```
+
+6. **Deactivate the Virtual Environment (Optional)**:
+   To deactivate the environment when done:
+   ```bash
+   deactivate
+   ```
+
+These steps will enable you to run the program on a new Ubuntu 22.04 system with all dependencies correctly configured.
 
 ## Grading Policy
 
